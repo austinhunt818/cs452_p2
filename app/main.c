@@ -36,23 +36,7 @@ static void explain_waitpid(int status)
 
 int main(int argc, char *argv[])
 {
-
-
-    int opt;
-    while ((opt = getopt(argc, argv, "v")) != -1) {
-        switch (opt) {
-            case 'v':
-                printf("Version %d.%d\n", lab_VERSION_MAJOR, lab_VERSION_MINOR);
-                return 0;
-            default:
-                fprintf(stderr, "Usage: %s [-v]\n", argv[0]);
-                return 1;
-        }
-    }
-  
-
-
-    // parse_args(argc, argv);
+    parse_args(argc, argv);
     struct shell sh;
     sh_init(&sh);
     char *line = (char *)NULL;
