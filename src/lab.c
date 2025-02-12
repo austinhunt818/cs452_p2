@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#define UNUSED(x) (void)(x)
 
 void print_version() {
     printf("Version 1.0.0\n");
@@ -25,7 +24,6 @@ void print_version() {
 // }
 
 char *get_prompt(const char *env) {
-    UNUSED(env);
     return NULL;
 }
 
@@ -34,34 +32,27 @@ int change_dir(char **dir) {
 }
 
 char **cmd_parse(char const *line) {
-    UNUSED(line);
     return NULL;
 }
 
 void cmd_free(char **line) {
-    UNUSED(line);
 }
 
 char *trim_white(char *line) {
-    UNUSED(line);
     return NULL;
 }
 
 int do_builtin(struct shell *sh, char **argv) {
-    UNUSED(sh);
-    UNUSED(argv);
+
     return 0==1;
 }
 
 void sh_init(struct shell *sh) {
-    UNUSED(sh);
 }
 
 void sh_destroy(struct shell *sh) {
-    UNUSED(sh);
 }
 
 void parse_args(int argc, char **argv) {
-    UNUSED(argc);
-    UNUSED(argv);
+
 }
