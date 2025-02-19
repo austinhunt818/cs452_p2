@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
+#include <pwd.h>
 #include "lab.h"
 
 void print_version() {
@@ -29,8 +30,20 @@ char *get_prompt(const char *env) {
 }
 
 int change_dir(char **dir) {
-    UNUSED(dir);
-    return -1;
+    int result;
+    if(dir[1] == NULL){
+        if(getenv("HOME") == NULL){
+            result = chdir(getpwuid(getuid())->pw_dir);
+        }
+        result = chdir(getenv("HOME"));
+        return result;
+    }
+    result = chdir(dir[1]);
+
+    if(result == -1){
+        perror("chdir");
+    }
+    return result;
 }
 
 char **cmd_parse(char const *line) {
@@ -97,13 +110,16 @@ char *trim_white(char *line) {
 }
 
 bool do_builtin(struct shell *sh, char **argv) {   
-    char* EXIT = "exit";
     if (argv == NULL || argv[0] == NULL) {
         return false;
     }
-    if(strcmp(argv[0], EXIT) == 0) {
+    if(strcmp(argv[0], "exit") == 0) {
         sh_destroy(sh);
         exit(0);
+    }
+    else if(strcmp(argv[0], "cd") == 0) {
+        change_dir(argv);
+        return true;
     }
     else{
         return false;
