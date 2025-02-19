@@ -7,6 +7,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <signal.h>
+#include <string.h>
 #include "lab.h"
 
 void print_version() {
@@ -28,8 +29,30 @@ int change_dir(char **dir) {
 }
 
 char **cmd_parse(char const *line) {
-    UNUSED(line);
-    return NULL;
+    char** cmd = (char**)malloc(sizeof(char*) * sysconf(_SC_ARG_MAX));
+
+    int i = 0;
+    while(line[i] != '\0'){
+        char* arg = (char*)malloc(sizeof(char) * 100);
+        while(isspace(line[i])){
+            i++;
+        }
+        if(line[i] == '\0'){
+            break;
+        }
+
+        int j = i;
+        while(!isspace(line[j]) && line[j] != '\0'){
+            arg[j-i] = line[j];
+            j++;
+        }
+        arg[j-i] = '\0';
+        cmd[i] = arg;
+        i = j;
+    }
+
+    cmd[i] = NULL;
+    return cmd;
 }
 
 void cmd_free(char **line) {
@@ -49,9 +72,17 @@ char *trim_white(char *line) {
 }
 
 bool do_builtin(struct shell *sh, char **argv) {   
-    UNUSED(sh);
-    UNUSED(argv);
-    return 0==1;
+    char* EXIT = "exit";
+    if (argv == NULL || argv[0] == NULL) {
+        return false;
+    }
+    if(strcmp(argv[0], EXIT) == 0) {
+        sh_destroy(sh);
+        exit(0);
+    }
+    else{
+        return false;
+    }
 }
 
 void sh_init(struct shell *sh) {
