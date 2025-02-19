@@ -48,6 +48,9 @@ int change_dir(char **dir) {
 }
 
 char **cmd_parse(char const *line) {
+    if(line == NULL) {
+        return NULL;
+    }
     char** cmd = (char**)malloc(sizeof(char*) * sysconf(_SC_ARG_MAX));
 
     int i = 0;
@@ -124,6 +127,9 @@ bool do_builtin(struct shell *sh, char **argv) {
     }
     else if(strcmp(argv[0], "history") == 0) {
         HIST_ENTRY **history = history_list();
+        if(history == NULL) {
+            return false;
+        }
         for(int i = 0; history[i] != NULL; i++) {
             printf("%d %s\n", i, history[i]->line);
         }

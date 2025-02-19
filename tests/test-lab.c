@@ -1,4 +1,5 @@
 #include <string.h>
+#include <readline/history.h>
 #include "harness/unity.h"
 #include "../src/lab.h"
 
@@ -146,6 +147,34 @@ void test_ch_dir_home(void)
      cmd_free(cmd);
 }
 
+void test_ch_dir_invalid(void)
+{
+     char *line = (char*) calloc(10, sizeof(char));
+     char *expected = getcwd(NULL,0);
+     strncpy(line, "cd abc", 10);
+     char **cmd = cmd_parse(line);
+     change_dir(cmd);
+     char *actual = getcwd(NULL,0);
+     TEST_ASSERT_EQUAL_STRING(expected, actual);
+     free(line);
+     free(actual);
+     cmd_free(cmd);
+}
+
+void test_ch_dir_lib(void)
+{
+     char *line = (char*) calloc(10, sizeof(char));
+     strncpy(line, "cd lib", 10);
+     char **cmd = cmd_parse(line);
+     change_dir(cmd);
+     char *expected = "/usr/lib";     
+     char *actual = getcwd(NULL,0);
+     TEST_ASSERT_EQUAL_STRING(expected, actual);
+     free(line);
+     free(actual);
+     cmd_free(cmd);
+}
+
 void test_ch_dir_root(void)
 {
      char *line = (char*) calloc(10, sizeof(char));
@@ -159,6 +188,37 @@ void test_ch_dir_root(void)
      cmd_free(cmd);
 }
 
+void test_builtin_history(void)
+{
+     char *line = (char*) malloc(10 * sizeof(char));
+     add_history("ls -a");
+     add_history("cd");
+     add_history("cd /");
+     char **cmd = cmd_parse("history");
+     TEST_ASSERT_TRUE(do_builtin(NULL, cmd));
+     free(line);
+     cmd_free(cmd);
+}
+
+void test_cmd_parse_empty(void)
+{
+  char **rval = cmd_parse("");
+  TEST_ASSERT_TRUE(rval);
+  TEST_ASSERT_EQUAL_STRING(NULL, rval[0]);
+  TEST_ASSERT_FALSE(rval[0]);
+  cmd_free(rval);
+}
+
+void test_cmd_parse_null(void)
+{
+  char **rval = cmd_parse(NULL);
+  TEST_ASSERT_NULL(rval);
+}
+
+
+
+
+
 int main(void) {
   UNITY_BEGIN();
   RUN_TEST(test_cmd_parse);
@@ -168,11 +228,21 @@ int main(void) {
   RUN_TEST(test_trim_white_end_whitespace);
   RUN_TEST(test_trim_white_both_whitespace_single);
   RUN_TEST(test_trim_white_both_whitespace_double);
+  RUN_TEST(test_trim_white_mostly_whitespace);
   RUN_TEST(test_trim_white_all_whitespace);
   RUN_TEST(test_get_prompt_default);
   RUN_TEST(test_get_prompt_custom);
   RUN_TEST(test_ch_dir_home);
   RUN_TEST(test_ch_dir_root);
+
+  //added tests
+  RUN_TEST(test_ch_dir_invalid);
+  RUN_TEST(test_ch_dir_lib);
+  RUN_TEST(test_builtin_history);
+  RUN_TEST(test_cmd_parse_empty); 
+  RUN_TEST(test_cmd_parse_null);
+
+  
 
   return UNITY_END();
 }

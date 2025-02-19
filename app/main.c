@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
             if (rval == -1)
             {
                 fprintf(stderr, "Wait pid failed with -1\n");
-		explain_waitpid(status);
+		        explain_waitpid(status);
             }
             cmd_free(cmd);
             // get control of the shell
