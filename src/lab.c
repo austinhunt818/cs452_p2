@@ -17,10 +17,15 @@ void print_version() {
 char *get_prompt(const char *env) {
     char *prompt = getenv(env);
     if (prompt == NULL) {
-        return "shell>";
+        prompt = "shell>";
     }
     
-    return prompt;
+    char *result = malloc(strlen(prompt) + 1);
+    if (result != NULL) {
+        strcpy(result, prompt);
+    }
+    
+    return result;
 }
 
 int change_dir(char **dir) {
@@ -32,13 +37,11 @@ char **cmd_parse(char const *line) {
     char** cmd = (char**)malloc(sizeof(char*) * sysconf(_SC_ARG_MAX));
 
     int i = 0;
+    int cmd_index = 0;
     while(line[i] != '\0'){
         char* arg = (char*)malloc(sizeof(char) * 100);
         while(isspace(line[i])){
             i++;
-        }
-        if(line[i] == '\0'){
-            break;
         }
 
         int j = i;
@@ -47,11 +50,12 @@ char **cmd_parse(char const *line) {
             j++;
         }
         arg[j-i] = '\0';
-        cmd[i] = arg;
+        cmd[cmd_index] = arg;
+        cmd_index++;
         i = j;
     }
 
-    cmd[i] = NULL;
+    cmd[cmd_index] = NULL;
     return cmd;
 }
 
@@ -65,15 +69,31 @@ void cmd_free(char **line) {
 }
 
 char *trim_white(char *line) {
-    char *trimmed = NULL;
+    if(line == NULL) {
+        return NULL;
+    }
+
+    char *trimmed = malloc(strlen(line) + 1);
+
     int i = 0;
-    while(line[i] != '\0') {
-        if(!isspace(line[i])) {
-            trimmed += line[i];
-        }
+    int j = 0;
+    
+    //remove from beginning
+    while(isspace(line[i])) {
         i++;
     }
-    return line;
+    while(line[i] != '\0') {
+        trimmed[j] = line[i];
+        i++;
+        j++;
+    }
+    
+    while(j > 0 && isspace(trimmed[j-1])) {
+        j--;
+    }
+ 
+    trimmed[j] = '\0';
+    return trimmed;
 }
 
 bool do_builtin(struct shell *sh, char **argv) {   
@@ -126,7 +146,20 @@ void sh_init(struct shell *sh) {
 }
 
 void sh_destroy(struct shell *sh) {
-    UNUSED(sh);
+
+    //give control of the terminal back to the shell
+    tcsetpgrp(sh->shell_terminal, sh->shell_pgid);
+    tcsetattr(sh->shell_terminal, TCSADRAIN, &sh->shell_tmodes);
+
+    //reset signals
+    signal(SIGINT, SIG_DFL);
+    signal(SIGQUIT, SIG_DFL);
+    signal(SIGTSTP, SIG_DFL);
+    signal(SIGTTIN, SIG_DFL);
+    signal(SIGTTOU, SIG_DFL);
+
+    //kill the shell
+    kill(getpid(), SIGTERM);
 }
 
 void parse_args(int argc, char **argv) {
