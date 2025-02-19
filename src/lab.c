@@ -10,6 +10,7 @@
 #include <string.h>
 #include <pwd.h>
 #include "lab.h"
+#include <readline/history.h>
 
 void print_version() {
     printf("Version 1.0.0\n");
@@ -119,6 +120,13 @@ bool do_builtin(struct shell *sh, char **argv) {
     }
     else if(strcmp(argv[0], "cd") == 0) {
         change_dir(argv);
+        return true;
+    }
+    else if(strcmp(argv[0], "history") == 0) {
+        HIST_ENTRY **history = history_list();
+        for(int i = 0; history[i] != NULL; i++) {
+            printf("%d %s\n", i, history[i]->line);
+        }
         return true;
     }
     else{
