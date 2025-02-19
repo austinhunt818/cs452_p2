@@ -56,7 +56,12 @@ char **cmd_parse(char const *line) {
 }
 
 void cmd_free(char **line) {
-    UNUSED(line);
+    int i = 0;
+    while(line[i] != NULL){
+        free(line[i]);
+        i++;
+    }
+    free(line);
 }
 
 char *trim_white(char *line) {
