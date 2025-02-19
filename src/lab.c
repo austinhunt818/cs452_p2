@@ -37,8 +37,15 @@ void cmd_free(char **line) {
 }
 
 char *trim_white(char *line) {
-    UNUSED(line);
-    return NULL;
+    char *trimmed = NULL;
+    int i = 0;
+    while(line[i] != '\0') {
+        if(!isspace(line[i])) {
+            trimmed += line[i];
+        }
+        i++;
+    }
+    return line;
 }
 
 bool do_builtin(struct shell *sh, char **argv) {   
