@@ -12,10 +12,6 @@
 #include "lab.h"
 #include <readline/history.h>
 
-void print_version() {
-    printf("Version 1.0.0\n");
-}
-
 char *get_prompt(const char *env) {
     char *prompt = getenv(env);
     if (prompt == NULL) {
