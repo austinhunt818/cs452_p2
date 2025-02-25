@@ -12,12 +12,17 @@
 #include "lab.h"
 #include <readline/history.h>
 
+
 char *get_prompt(const char *env) {
+    //get prompt from environment variable
     char *prompt = getenv(env);
+
+    //default prompt
     if (prompt == NULL) {
         prompt = "shell>";
-    }
+    }  
     
+    //Copy prompt to new memory
     char *result = malloc(strlen(prompt) + 1);
     if (result != NULL) {
         strcpy(result, prompt);
@@ -28,8 +33,11 @@ char *get_prompt(const char *env) {
 
 int change_dir(char **dir) {
     int result;
+
+    //if no arguments, change to home directory
     if(dir[1] == NULL){
         if(getenv("HOME") == NULL){
+            //get home directory from password file if no environment variable
             result = chdir(getpwuid(getuid())->pw_dir);
         }
         result = chdir(getenv("HOME"));
@@ -37,6 +45,7 @@ int change_dir(char **dir) {
     }
     result = chdir(dir[1]);
 
+    //print error if invalid directory
     if(result == -1){
         perror("chdir");
     }
@@ -47,16 +56,22 @@ char **cmd_parse(char const *line) {
     if(line == NULL) {
         return NULL;
     }
+
+    //allocate memory for command to size of max arguments from sysconf
     char** cmd = (char**)malloc(sizeof(char*) * sysconf(_SC_ARG_MAX));
 
+    //parse line into arguments
     int i = 0;
     int cmd_index = 0;
     while(line[i] != '\0'){
         char* arg = (char*)malloc(sizeof(char) * 100);
+
+        //skip whitespace
         while(isspace(line[i])){
             i++;
         }
 
+        //copy argument into arg variable
         int j = i;
         while(!isspace(line[j]) && line[j] != '\0'){
             arg[j-i] = line[j];
@@ -68,12 +83,15 @@ char **cmd_parse(char const *line) {
         i = j;
     }
 
+    //null terminate the array
     cmd[cmd_index] = NULL;
     return cmd;
 }
 
 void cmd_free(char **line) {
     int i = 0;
+
+    //free the cmd and each argument
     while(line[i] != NULL){
         free(line[i]);
         i++;
@@ -95,17 +113,20 @@ char *trim_white(char *line) {
     while(isspace(line[i])) {
         i++;
     }
+
+    //copy the line after initial whitespace to trimmed
     while(line[i] != '\0') {
         trimmed[j] = line[i];
         i++;
         j++;
     }
     
+    //remove from end
     while(j > 0 && isspace(trimmed[j-1])) {
         j--;
     }
- 
     trimmed[j] = '\0';
+
     return trimmed;
 }
 
@@ -113,19 +134,24 @@ bool do_builtin(struct shell *sh, char **argv) {
     if (argv == NULL || argv[0] == NULL) {
         return false;
     }
+
+    //exit command
     if(strcmp(argv[0], "exit") == 0) {
         sh_destroy(sh);
         exit(0);
     }
+    //cd command
     else if(strcmp(argv[0], "cd") == 0) {
         change_dir(argv);
         return true;
     }
+    //history command
     else if(strcmp(argv[0], "history") == 0) {
         HIST_ENTRY **history = history_list();
         if(history == NULL) {
             return false;
         }
+        //print history
         for(int i = 0; history[i] != NULL; i++) {
             printf("%d %s\n", i, history[i]->line);
         }
@@ -168,11 +194,9 @@ void sh_init(struct shell *sh) {
 
     //set prompt
     sh->prompt = get_prompt("MY_PROMPT");
-
 }
 
 void sh_destroy(struct shell *sh) {
-
     //give control of the terminal back to the shell
     tcsetpgrp(sh->shell_terminal, sh->shell_pgid);
     tcsetattr(sh->shell_terminal, TCSADRAIN, &sh->shell_tmodes);
@@ -184,12 +208,16 @@ void sh_destroy(struct shell *sh) {
     signal(SIGTTIN, SIG_DFL);
     signal(SIGTTOU, SIG_DFL);
 
+    //free the prompt
+    free(sh->prompt);
+
     //kill the shell
     kill(getpid(), SIGTERM);
 }
 
 void parse_args(int argc, char **argv) {
     int opt;
+    //parse command line arguments
     while ((opt = getopt(argc, argv, "v")) != -1) {
         switch (opt) {
             case 'v':
