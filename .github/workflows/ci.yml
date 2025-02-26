@@ -14,6 +14,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: make
-      run: sudo apt-get install libreadline6; make
+      run: sudo apt-get install libreadline-dev; make
     - name: make check
-      run: sudo apt-get install libreadline6; make check
+      run: sudo apt-get install libreadline-dev; make check
