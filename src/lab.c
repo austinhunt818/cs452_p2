@@ -39,6 +39,7 @@ int change_dir(char **dir) {
         if(getenv("HOME") == NULL){
             //get home directory from password file if no environment variable
             result = chdir(getpwuid(getuid())->pw_dir);
+            return result;
         }
         result = chdir(getenv("HOME"));
         return result;
